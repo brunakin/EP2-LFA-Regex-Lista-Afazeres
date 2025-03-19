@@ -4,6 +4,7 @@ class ListaAfazeres
     EXPRESSAO_ACAO = /\b[A-Za-z]+(ar|er|ir|or|ur)\b/ 
     EXPRESSAO_URL = /(https?:\/\/[\w.-]+(?:\/[\w.-]*)*(?:\?[^#\s]*)?(?:#[^\s]*)?)/
     EXPRESSAO_EMAIL = /[a-z]+[a-z_\.]*[a-z]+@[a-z]+[a-z\.]*[a-z]+/
+    EXPRESSAO_TAG = /([#])([A-Za-z]+)/ # não pode aceitar espaço antes e depois?
 
     
     def self.verificar_horario?(horario)
@@ -45,12 +46,21 @@ class ListaAfazeres
         end
     end
     
+    def self.verificar_tag?(tag)
+        if match = tag.match(EXPRESSAO_TAG)
+            puts "Tag: #{match[0]}"
+        else
+            puts "#{tag} inválida"
+        end
+    end
+    
     def self.regex_lista_afazeres?(lista)
         puts "Saída"
         self.verificar_horario?(lista)
         self.verificar_acao?(lista)
         self.verificar_url?(lista)
         self.verificar_email?(lista)
+        self.verificar_tag?(lista)
     end 
 end
 
@@ -68,15 +78,18 @@ testes = [
     "https://sp.senac.br/pag1#teste?aula=1&teste=4",
     "brukinjo@gmail.com",
     "bruna.klpinto@senacsp.edu.br",
-    "julio@123"
+    "julio@123",
+    "#trabalho",
+    "vamos",
+    "#Vamos estudar",
+    "#estudar"
 ]
 
 # chamada do array teste para cada função separada
-#testes.each { |teste| ListaAfazeres.verificar_email?(teste) }
+#testes.each { |teste| ListaAfazeres.verificar_tag?(teste) }
 
 # Entrada tipo do exercício
 lista = "Hoje vou caminhar as 10. Acesse: https://sp.senac.br/pag1#teste?aula=1&teste=4 ou me contate por fulano.ciclano@gmail.com"
 
 # Chamada da função "oficial"
 ListaAfazeres.regex_lista_afazeres?(lista)
-
