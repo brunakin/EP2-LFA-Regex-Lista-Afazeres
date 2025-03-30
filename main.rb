@@ -3,31 +3,8 @@ class ListaAfazeres
   EXPRESSAO_ACAO = /\b[A-Za-z]+(ar|er|ir|or|ur)\b/i
   EXPRESSAO_URL = /(https?:\/\/[\w\-\.]+(?:\/[\w\-\.\/_]*)*(?:\?[^#\s]*)?(?:#[^\s]*)?)/i
   EXPRESSAO_EMAIL = /[a-zA-Z0-9]+[\w\-\.]*[a-zA-Z0-9]+@[a-zA-Z0-9]+[\w\-\.]*[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)+/i
-  
-  # Expressão para tags
-  # (?<![\/:])  garante que a tag não seja precedida por "/" ou ":" para evitar capturar fragmentos de URLs (ex: https://site.com/pagina#secao)
-  # "#" que indica o início de uma tag
-  # ([a-zA-Z0-9_\-\.+@&!]+) captura a tag em si, composta por letras, números, sublinhados, hífens, caracteres especiais e acentuação
-  # (?!\?)  garante que a tag não seja seguida por "?", evitando fragmentos de URLs com parâmetros (ex: #secao?param=valor)
   EXPRESSAO_TAG = /(?<![\/:])#([a-zA-Z0-9_\-\.+@&!áàâãéèêíìîóòôõúùûçÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ]+)(?!\?)/i 
-  
-  # Expressão para reconhecer datas e períodos específicos
-
-  # Primeira parte: Data escrita por extenso (exemplo: 25 de março de 2023):
-  # (\d{1,2}): Captura o dia (um ou dois dígitos).
-  # ([a-zA-ZçÇ]+): Captura o nome do mês (permitindo caracteres como "ç").
-  # (\d{4}|\d{2})?: Captura o ano, que pode ser de 2 ou 4 dígitos (exemplo: 23 ou 2023).
-  
-  # Segunda parte: Formato de data numérica (exemplo: 25/03/2023):
-  # (\d{1,2}): Captura o dia.
-  # [\/\.-]: Captura o separador entre os números (barra, ponto ou hífen).
-  # (\d{1,2}): Captura o mês.
-  # (\d{4}|\d{2})?: Captura o ano, que pode ser de 2 ou 4 dígitos.
-  
-  # Terceira parte: Expressões relativas a datas (exemplo: "hoje", "amanhã", "semana que vem"):
-  # hoje|amanhã|depois de amanhã: Captura expressões comuns para datas próximas.
-  # pr[oó]xim[oa]s?\s*: Captura variações de "próximos", "próxima", com flexões.
-  # (?:dias?|semanas?|m[eê]s(?:es)?|anos?|final\s*de\s*semana): Captura a unidade de tempo após as expressões anteriores (dias, semanas, meses, anos, ou final de semana).
+  EXPRESSAO_PESSOA = /\b(?:com|para)\s+([A-ZÀ-ÚÇ][a-zà-úç]+(?:\s[A-ZÀ-ÚÇ][a-zà-úç]+)?)\b/
   EXPRESSAO_DATA = /\b(?:(?:(\d{1,2})\s*(?:de\s*)?([a-zA-ZçÇ]+)(?:\s*(?:de\s*)?(\d{4}|\d{2}))?)|(?:(\d{1,2})[\/\.-](\d{1,2})(?:[\/\.-](\d{4}|\d{2}))?)|(?:(hoje|amanh[aã]|depois\s*de\s*amanh[ãa]|pr[oó]xim[oa]s?\s*(?:dias?|semanas?|m[eê]s(?:es)?|anos?|final\s*de\s*semana)|(?:esse|este|esta)\s*(?:final\s*de\s*semana|fim\s*de\s*semana)|(?:semana|m[eê]s)\s*que\s*vem)))\b/i
   
   # Mapeamento de meses 
@@ -69,7 +46,7 @@ class ListaAfazeres
       puts "Horário: #{horario_formatado}"
       true
     else
-      puts "#{horario} inválido" 
+      puts "Horário não encontrado" 
       false
     end
   end
@@ -79,7 +56,7 @@ class ListaAfazeres
       puts "Ação: #{match[0]}"
       true
     else
-      puts "#{acao} inválida"
+      puts "Ação não encontrada"
       false
     end
   end
@@ -89,7 +66,7 @@ class ListaAfazeres
       puts "URL: #{match[0]}"
       true
     else
-      puts "#{url} inválida"
+      puts "URL não encontrada"
       false
     end
   end
@@ -99,7 +76,7 @@ class ListaAfazeres
       puts "Email: #{match[0]}"
       true
     else
-      puts "#{email} inválido"
+      puts "Email não encontrado"
       false
     end
   end
@@ -118,6 +95,15 @@ class ListaAfazeres
       else
         false
       end
+  end
+  
+  def self.verificar_pessoa?(pessoa)
+    if match = pessoa.match(EXPRESSAO_PESSOA)  
+        puts "Pessoa: #{match[1]}"
+        true
+    else
+        puts "pessoa não encontrada"
+    end
   end
   
   # calcular o próximo final de semana
@@ -197,7 +183,9 @@ class ListaAfazeres
       
       # Caso 3: Expressões temporais relativas
       elsif match[7]
-        expressao_tempo = match[7].downcase.gsub(/[áàãâ]/, 'a').gsub(/[éèê]/, 'e').gsub(/[íìî]/, 'i').gsub(/[óòõô]/, 'o').gsub(/[úùû]/, 'u')
+        expressao_tempo = match[7].downcase.gsub(/[áàãâ]/, 'a')
+        .gsub(/[éèê]/, 'e').gsub(/[íìî]/, 'i').gsub(/[óòõô]/, 'o')
+        .gsub(/[úùû]/, 'u')
         
         case expressao_tempo
         when /^hoje/
@@ -270,6 +258,7 @@ class ListaAfazeres
     url_encontrada = verificar_url?(lista)
     email_encontrado = verificar_email?(lista)
     tag_encontrada = verificar_tag?(lista)
+    pessoa_encontrada = verificar_pessoa?(lista)
     
     if !data_encontrada && !horario_encontrado && !acao_encontrada && 
        !tag_encontrada && !url_encontrada && !email_encontrado
@@ -315,7 +304,8 @@ testes = [
 #testes.each { |teste| ListaAfazeres.verificar_tag?(teste) }
 
 # Entrada tipo do exercício
-lista = "Amanhã vou caminhar as 10. Acesse: https://sp.senac.br/pag1#teste?aula=1&teste=4 ou me contate por fulano.ciclano@gmail.com, #lazer #vida"
+#lista = "Amanhã vou caminhar com Ana Paula as 10. Acesse: https://sp.senac.br/pag1#teste?aula=1&teste=4 ou me contate por fulano.ciclano@gmail.com, #lazer #vida"
+lista = "Agendar com José reunião às 10:00 amanhã #trabalho"
 
 # Chamada da função "oficial"
 ListaAfazeres.regex_lista_afazeres?(lista)
